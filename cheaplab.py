@@ -35,14 +35,22 @@ class LearnedIndices(torch.nn.Module):
         kernel_size = 1
         padding_size = (kernel_size - 1) // 2
 
-        self.conv1 = torch.nn.Conv2d(
-            band_count, intermediate_channels1, kernel_size=kernel_size, padding=padding_size, bias=False)
-        self.conv_numerator = torch.nn.Conv2d(
-            intermediate_channels1, self.output_channels, kernel_size=1, padding=0, bias=False)
-        self.conv_denominator = torch.nn.Conv2d(
-            intermediate_channels1, self.output_channels, kernel_size=1, padding=0, bias=True)
-        self.batch_norm_quotient = torch.nn.BatchNorm2d(
-            self.output_channels)
+        self.conv1 = torch.nn.Conv2d(band_count,
+                                     intermediate_channels1,
+                                     kernel_size=kernel_size,
+                                     padding=padding_size,
+                                     bias=False)
+        self.conv_numerator = torch.nn.Conv2d(intermediate_channels1,
+                                              self.output_channels,
+                                              kernel_size=1,
+                                              padding=0,
+                                              bias=False)
+        self.conv_denominator = torch.nn.Conv2d(intermediate_channels1,
+                                                self.output_channels,
+                                                kernel_size=1,
+                                                padding=0,
+                                                bias=True)
+        self.batch_norm_quotient = torch.nn.BatchNorm2d(self.output_channels)
 
     def forward(self, x):
         x = self.conv1(x)
@@ -56,8 +64,9 @@ class LearnedIndices(torch.nn.Module):
 class Nugget(torch.nn.Module):
     def __init__(self, kernel_size, in_channels, out_channels):
         super(Nugget, self).__init__()
-        self.conv2d = torch.nn.Conv2d(
-            in_channels, out_channels, kernel_size=kernel_size)
+        self.conv2d = torch.nn.Conv2d(in_channels,
+                                      out_channels,
+                                      kernel_size=kernel_size)
         self.batch_norm = torch.nn.BatchNorm2d(out_channels)
         self.relu = torch.nn.ReLU()
 
@@ -69,16 +78,13 @@ class Nugget(torch.nn.Module):
 
 
 class CheapLabBinary(torch.nn.Module):
-    def __init__(self, band_count):
+    def __init__(self, num_channels, num_classes):
         super(CheapLabBinary, self).__init__()
-        self.indices = LearnedIndices(band_count)
+        self.indices = LearnedIndices(num_channels)
         self.classifier = torch.nn.Sequential(
-            Nugget(1, self.indices.output_channels+band_count, 16),
-            Nugget(1, 16, 8),
-            Nugget(1, 8, 4),
-            Nugget(1, 4, 2),
-            torch.nn.Conv2d(2, 1, kernel_size=1)
-        )
+            Nugget(1, self.indices.output_channels + num_channels, 16),
+            Nugget(1, 16, 8), Nugget(1, 8, 4), Nugget(1, 4, 2),
+            torch.nn.Conv2d(2, 1, kernel_size=1))
         self.input_layers = [self.indices]
         self.output_layers = [self.classifier]
 
@@ -88,6 +94,6 @@ class CheapLabBinary(torch.nn.Module):
         return {'2seg': x}
 
 
-def make_model(band_count, input_stride=1, class_count=1, divisor=1, pretrained=False):
+def make_model(num_channels, num_classes=2):
     cheaplab = CheapLabBinary(band_count)
     return cheaplab
