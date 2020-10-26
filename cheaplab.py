@@ -80,22 +80,33 @@ class Nugget(torch.nn.Module):
 
 
 class CheapLab(torch.nn.Module):
-    def __init__(self, num_channels, num_classes):
+    def __init__(self, num_channels, preshrink, num_classes):
         super(CheapLab, self).__init__()
+        self.preshrink = preshrink
         self.indices = LearnedIndices(num_channels)
         self.classifier = torch.nn.Sequential(
             Nugget(1, self.indices.output_channels + num_channels, 16),
             Nugget(1, 16, 8), Nugget(1, 8, 4), Nugget(1, 4, 2),
-            torch.nn.Conv2d(2, 1, kernel_size=1))
+            torch.nn.Conv2d(2, num_classes, kernel_size=1))
         self.input_layers = [self.indices]
         self.output_layers = [self.classifier]
 
     def forward(self, x):
+        [w, h] = x.shape[-2:]
+        x = torch.nn.functional.interpolate(
+            x,
+            size=[w // self.preshrink, h // self.preshrink],
+            mode='bilinear',
+            align_corners=False)
         x = torch.cat([self.indices(x), x], axis=1)
         x = self.classifier(x)
-        return {'2seg': x}
+        x = torch.nn.functional.interpolate(x,
+                                            size=[w, h],
+                                            mode='bilinear',
+                                            align_corners=False)
+        return x
 
 
-def make_cheaplab_model(num_channels, num_classes=2):
-    cheaplab = CheapLab(band_count)
+def make_cheaplab_model(num_channels, preshrink=1, num_classes=2):
+    cheaplab = CheapLab(num_channels, preshrink, num_classes)
     return cheaplab
