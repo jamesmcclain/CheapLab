@@ -24,6 +24,8 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 
+import torch
+
 
 class LearnedIndices(torch.nn.Module):
 
@@ -77,9 +79,9 @@ class Nugget(torch.nn.Module):
         return x
 
 
-class CheapLabBinary(torch.nn.Module):
+class CheapLab(torch.nn.Module):
     def __init__(self, num_channels, num_classes):
-        super(CheapLabBinary, self).__init__()
+        super(CheapLab, self).__init__()
         self.indices = LearnedIndices(num_channels)
         self.classifier = torch.nn.Sequential(
             Nugget(1, self.indices.output_channels + num_channels, 16),
@@ -94,6 +96,6 @@ class CheapLabBinary(torch.nn.Module):
         return {'2seg': x}
 
 
-def make_model(num_channels, num_classes=2):
-    cheaplab = CheapLabBinary(band_count)
+def make_cheaplab_model(num_channels, num_classes=2):
+    cheaplab = CheapLab(band_count)
     return cheaplab
