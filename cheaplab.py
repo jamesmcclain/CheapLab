@@ -84,13 +84,14 @@ class CheapLab(torch.nn.Module):
         super(CheapLab, self).__init__()
 
         self.preshrink = preshrink
-        self.activation = torch.nn.ReLU()
+        # self.activation = torch.nn.ReLU()
 
         self.indices = LearnedIndices(num_channels)
         self.classifier = torch.nn.Sequential(
             Nugget(1, self.indices.output_channels + num_channels, 16),
             Nugget(1, 16, 8), Nugget(1, 8, 4), Nugget(1, 4, 2),
-            torch.nn.Conv2d(2, num_classes, kernel_size=1))
+            # torch.nn.Conv2d(2, 2, kernel_size=1)
+        )
         self.input_layers = [self.indices]
         self.output_layers = [self.classifier]
 
@@ -108,7 +109,7 @@ class CheapLab(torch.nn.Module):
                                             size=[w, h],
                                             mode='bilinear',
                                             align_corners=False)
-        x = self.activation(x)
+        # x = self.activation(x)
 
         return x
 
