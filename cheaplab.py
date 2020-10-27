@@ -84,7 +84,7 @@ class CheapLab(torch.nn.Module):
         super(CheapLab, self).__init__()
 
         self.preshrink = preshrink
-        self.sigmoid = torch.nn.Sigmoid()
+        self.activation = torch.nn.ReLU()
 
         self.indices = LearnedIndices(num_channels)
         self.classifier = torch.nn.Sequential(
@@ -108,7 +108,7 @@ class CheapLab(torch.nn.Module):
                                             size=[w, h],
                                             mode='bilinear',
                                             align_corners=False)
-        x = self.sigmoid(x)
+        x = self.activation(x)
 
         return x
 
