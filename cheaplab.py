@@ -82,7 +82,10 @@ class Nugget(torch.nn.Module):
 class CheapLab(torch.nn.Module):
     def __init__(self, num_channels, preshrink, num_classes):
         super(CheapLab, self).__init__()
+
         self.preshrink = preshrink
+        self.sigmoid = torch.nn.Sigmoid()
+
         self.indices = LearnedIndices(num_channels)
         self.classifier = torch.nn.Sequential(
             Nugget(1, self.indices.output_channels + num_channels, 16),
@@ -93,6 +96,7 @@ class CheapLab(torch.nn.Module):
 
     def forward(self, x):
         [w, h] = x.shape[-2:]
+
         x = torch.nn.functional.interpolate(
             x,
             size=[w // self.preshrink, h // self.preshrink],
@@ -104,6 +108,8 @@ class CheapLab(torch.nn.Module):
                                             size=[w, h],
                                             mode='bilinear',
                                             align_corners=False)
+        x = self.sigmoid(x)
+
         return x
 
 
