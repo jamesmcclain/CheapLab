@@ -1,3 +1,3 @@
 dependencies = ['torch']
 
-from cheaplab import CheapLab, make_cheaplab_model
+from cheaplab import make_cheaplab_model, make_cheaplab_loss
