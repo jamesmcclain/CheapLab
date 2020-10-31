@@ -96,7 +96,7 @@ class CheapLab(torch.nn.Module):
     def forward(self, x: torch.Tensor):
         [w, h] = x.shape[-2:]
 
-        if self.preshrink:
+        if self.preshrink != 1:
             x = torch.nn.functional.interpolate(
                 x,
                 size=[w // self.preshrink, h // self.preshrink],
@@ -104,7 +104,7 @@ class CheapLab(torch.nn.Module):
                 align_corners=False)
         x = torch.cat([self.indices(x), x], axis=1)
         x = self.classifier(x)
-        if self.preshrink:
+        if self.preshrink != 1:
             x = torch.nn.functional.interpolate(x,
                                                 size=[w, h],
                                                 mode='bilinear',
@@ -124,6 +124,7 @@ class CheapLabLoss(torch.nn.Module):
         x = fg - bg
         y = (y == 1).type(x.type())
         return self.crit(x, y)
+
 
 def make_cheaplab_model(num_channels, preshrink=1):
     cheaplab = CheapLab(num_channels, preshrink)
