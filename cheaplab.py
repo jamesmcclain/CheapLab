@@ -113,9 +113,9 @@ class CheapLab(torch.nn.Module):
         return x
 
 
-class CheapLabLoss(torch.nn.Module):
+class RvBCELoss(torch.nn.Module):
     def __init__(self, weight: Optional[torch.Tensor] = None):
-        super(CheapLabLoss, self).__init__()
+        super(RvBCELoss, self).__init__()
         self.crit = torch.nn.BCEWithLogitsLoss(weight)
 
     def forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
@@ -131,5 +131,5 @@ def make_cheaplab_model(num_channels, preshrink=1):
     return cheaplab
 
 
-def make_cheaplab_loss(weight: Optional[torch.Tensor] = None):
-    return CheapLabLoss(weight)
+def make_bce_loss(weight: Optional[torch.Tensor] = None):
+    return RvBCELoss(weight)
