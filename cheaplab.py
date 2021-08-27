@@ -81,7 +81,10 @@ class Nugget(torch.nn.Module):
 
 
 class CheapLab(torch.nn.Module):
-    def __init__(self, num_channels: int, preshrink: bool):
+    def __init__(self,
+                 num_channels: int,
+                 preshrink: int = 1,
+                 out_channels: int = 2):
         super(CheapLab, self).__init__()
 
         self.preshrink = preshrink
@@ -90,7 +93,7 @@ class CheapLab(torch.nn.Module):
             Nugget(1, self.indices.output_channels + num_channels, 16),
             Nugget(1, 16, 8),
             Nugget(1, 8, 4),
-            Nugget(1, 4, 2),
+            Nugget(1, 4, out_channels),
         )
 
     def forward(self, x: torch.Tensor):
@@ -126,8 +129,8 @@ class RvBCELoss(torch.nn.Module):
         return self.crit(x, y)
 
 
-def make_cheaplab_model(num_channels, preshrink=1):
-    cheaplab = CheapLab(num_channels, preshrink)
+def make_cheaplab_model(num_channels, preshrink=1, out_channels=2):
+    cheaplab = CheapLab(num_channels, preshrink, out_channels)
     return cheaplab
 
 
